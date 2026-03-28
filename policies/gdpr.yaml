@@ -1,0 +1,8 @@
+policies:
+  - name: redact-eu-personal-data
+    when:
+      detected: ["EMAIL", "PHONE", "EU_NATIONAL_ID"]
+      model: "gpt-4.1"
+    action: redact
+    notify:
+      - dpo@company.com
