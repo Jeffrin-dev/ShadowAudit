@@ -1,0 +1,3 @@
+include policies/gdpr.yaml
+include policies/hipaa.yaml
+include policies/pci_dss.yaml
