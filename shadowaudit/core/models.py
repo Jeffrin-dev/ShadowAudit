@@ -15,6 +15,7 @@ class ScanResult:
     action_taken: str
     tokens_before: int
     tokens_after: int
+    substitution_map: dict[str, str] | None = None
 
 
 @dataclass
