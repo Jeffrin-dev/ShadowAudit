@@ -7,10 +7,10 @@ import re
 from collections import Counter
 
 try:  # pragma: no cover - optional dependency.
-    from detect_secrets import SecretsCollection
+    from detect_secrets.core import scan
     from detect_secrets.settings import transient_settings
 except Exception:  # pragma: no cover - fallback path when package is unavailable.
-    SecretsCollection = None
+    scan = None
     transient_settings = None
 
 
@@ -36,7 +36,7 @@ class SecretsDetector:
         return re.findall(r"[A-Za-z0-9_\-+/=]{8,}", text)
 
     def _detect_with_library(self, text: str) -> list[str]:
-        if SecretsCollection is None or transient_settings is None:
+        if scan is None or transient_settings is None:
             return []
 
         plugin_settings = {
@@ -48,11 +48,10 @@ class SecretsDetector:
 
         findings: list[str] = []
         with transient_settings(plugin_settings):
-            collection = SecretsCollection()
-            collection.scan_file_content(text, filename="<memory>")
-            for line_secrets in collection.data.values():
-                for secret in line_secrets:
-                    findings.append(secret.secret_value)
+            for secret in scan.scan_line(text):
+                value = getattr(secret, "secret_value", None)
+                if value:
+                    findings.append(value)
         return findings
 
     def detect(self, text: str) -> list[str]:
