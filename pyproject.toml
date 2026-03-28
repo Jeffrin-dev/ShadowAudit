@@ -3,6 +3,13 @@ name = "shadowaudit"
 version = "0.1.0"
 description = "ShadowAudit Python project"
 requires-python = ">=3.10"
+dependencies = [
+    "PyYAML>=6.0",
+    "detect-secrets>=1.5.0",
+]
+
+[project.scripts]
+shadowaudit = "shadowaudit.cli:main"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

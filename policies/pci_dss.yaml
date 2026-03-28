@@ -1,0 +1,9 @@
+policies:
+  - name: block-card-data
+    when:
+      detected: ["CREDIT_CARD", "CVV"]
+      entropy_score: 4.5
+    action: block
+    notify:
+      - fraud@company.com
+      - compliance@company.com

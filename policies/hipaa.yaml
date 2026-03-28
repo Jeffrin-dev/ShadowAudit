@@ -1,0 +1,8 @@
+policies:
+  - name: block-phi-detected
+    when:
+      detected: ["PHI", "MEDICAL_RECORD"]
+    action: block
+    notify:
+      - security@company.com
+      - privacy@company.com
