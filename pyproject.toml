@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
 [project]
 name = "shadowaudit"
 version = "0.1.0"
@@ -6,8 +10,16 @@ requires-python = ">=3.10"
 dependencies = [
     "PyYAML>=6.0",
     "detect-secrets>=1.5.0",
+]
+
+[project.optional-dependencies]
+ner = [
     "chromadb>=0.5.0",
     "sentence-transformers>=3.0.0",
+    "spacy-transformers>=1.3.5",
+]
+siem = [
+    "datadog-api-client>=2.23.0",
 ]
 
 [project.scripts]
