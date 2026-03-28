@@ -53,13 +53,13 @@ class PIIScanner:
         nlp_engine_name = "spacy"  # transformer models are selected by Presidio/spaCy config.
         return AnalyzerEngine(registry=registry, supported_languages=[self.language], nlp_engine_name=nlp_engine_name)
 
-    def detect(self, prompt: str) -> list[Detection]:
+    def detect(self, prompt: str, *, score_threshold: float = 0.5) -> list[Detection]:
         """Detect entities in the prompt and return normalized detections."""
 
         if self.fast_mode or self._analyzer is None:
             return self._regex_detect(prompt)
 
-        findings = self._analyzer.analyze(text=prompt, language=self.language)
+        findings = self._analyzer.analyze(text=prompt, language=self.language, score_threshold=score_threshold)
         results: list[Detection] = []
         for match in findings:
             results.append(
