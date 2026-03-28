@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import json
 
 from shadowaudit.core.policy import PolicyEngine
+from shadowaudit.reports.gdpr_report import generate_gdpr_report
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -16,6 +18,11 @@ def _build_parser() -> argparse.ArgumentParser:
 
     policy_check_parser = policy_subparsers.add_parser("check", help="Validate a policy YAML config file")
     policy_check_parser.add_argument("config", help="Path to policy YAML file")
+
+    report_parser = subparsers.add_parser("report", help="Generate compliance reports")
+    report_parser.add_argument("--format", choices=["gdpr"], required=True, help="Report format")
+    report_parser.add_argument("--from", dest="from_date", required=True, help="Start date (YYYY-MM-DD)")
+    report_parser.add_argument("--to", dest="to_date", required=True, help="End date (YYYY-MM-DD)")
 
     return parser
 
@@ -32,6 +39,11 @@ def main() -> int:
             return 1
 
         print(f"VALID: loaded {len(engine.policies)} policies from {args.config}")
+        return 0
+
+    if args.command == "report" and args.format == "gdpr":
+        report = generate_gdpr_report(args.from_date, args.to_date)
+        print(json.dumps(report, indent=2, ensure_ascii=False))
         return 0
 
     parser.print_help()
