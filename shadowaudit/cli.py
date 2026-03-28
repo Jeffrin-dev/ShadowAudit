@@ -24,6 +24,10 @@ def _build_parser() -> argparse.ArgumentParser:
     report_parser.add_argument("--from", dest="from_date", required=True, help="Start date (YYYY-MM-DD)")
     report_parser.add_argument("--to", dest="to_date", required=True, help="End date (YYYY-MM-DD)")
 
+    proxy_parser = subparsers.add_parser("proxy", help="Run a local HTTP proxy")
+    proxy_parser.add_argument("--port", type=int, default=8080, help="Local listening port")
+    proxy_parser.add_argument("--target", default="https://api.openai.com", help="Upstream API base URL")
+
     return parser
 
 
@@ -44,6 +48,12 @@ def main() -> int:
     if args.command == "report" and args.format == "gdpr":
         report = generate_gdpr_report(args.from_date, args.to_date)
         print(json.dumps(report, indent=2, ensure_ascii=False))
+        return 0
+
+    if args.command == "proxy":
+        from shadowaudit.sdk.proxy import run_proxy_server
+
+        run_proxy_server(port=args.port, target=args.target)
         return 0
 
     parser.print_help()
