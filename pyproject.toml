@@ -1,0 +1,8 @@
+[project]
+name = "shadowaudit"
+version = "0.1.0"
+description = "ShadowAudit Python project"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
