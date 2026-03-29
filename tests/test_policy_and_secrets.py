@@ -44,6 +44,14 @@ def test_secrets_detector_flags_explicit_prefix_patterns(secret: str, expected: 
     assert expected in findings
 
 
+def test_secrets_detector_ignores_clean_english_sentence() -> None:
+    detector = SecretsDetector(entropy_threshold=4.5)
+
+    findings = detector.detect("My API key is not for sharing and the docs are with the team.")
+
+    assert findings == []
+
+
 def test_policy_engine_returns_first_match(tmp_path: Path) -> None:
     config = tmp_path / "policy.yaml"
     config.write_text(
