@@ -8,6 +8,7 @@ from dataclasses import asdict
 
 from shadowaudit.core.policy import PolicyEngine
 from shadowaudit.core.scanner import PIIScanner
+from shadowaudit.core.secrets import SecretsDetector
 from shadowaudit.reports.gdpr_report import generate_gdpr_report
 
 
@@ -62,8 +63,12 @@ def main() -> int:
         return 0
 
     if args.command == "scan":
+        text = " ".join(args.text)
         scanner = PIIScanner(fast_mode=True)
-        result = scanner.scan(" ".join(args.text))
+        secrets_detector = SecretsDetector()
+        result = scanner.scan(text)
+        result.secrets_found = secrets_detector.detect(text)
+        result.action_taken = "detected" if (result.detected_entities or result.secrets_found) else "clean"
         payload = result.model_dump() if hasattr(result, "model_dump") else asdict(result)
         print(json.dumps(payload, indent=2, ensure_ascii=False))
         return 0
