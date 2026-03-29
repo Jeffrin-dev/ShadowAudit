@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import argparse
 import json
+from datetime import datetime, timezone
 from dataclasses import asdict
 
+from shadowaudit.core.audit import AuditLogger
+from shadowaudit.core.models import AuditEvent
 from shadowaudit.core.policy import PolicyEngine
 from shadowaudit.core.scanner import PIIScanner
 from shadowaudit.core.secrets import SecretsDetector
@@ -66,10 +69,21 @@ def main() -> int:
         text = " ".join(args.text)
         scanner = PIIScanner(fast_mode=True)
         secrets_detector = SecretsDetector()
-        result = scanner.scan(text)
-        result.secrets_found = secrets_detector.detect(text)
-        result.action_taken = "detected" if (result.detected_entities or result.secrets_found) else "clean"
-        payload = result.model_dump() if hasattr(result, "model_dump") else asdict(result)
+        scan_result = scanner.scan(text)
+        scan_result.secrets_found = secrets_detector.detect(text)
+        scan_result.action_taken = "detected" if (scan_result.detected_entities or scan_result.secrets_found) else "clean"
+
+        audit_event = AuditEvent(
+            timestamp=datetime.now(timezone.utc).isoformat(),
+            request_id=scan_result.request_id,
+            scan_result=scan_result,
+            policy_applied="none",
+            model_target="cli",
+            response_clean=True,
+        )
+        AuditLogger("audit.log").append(audit_event)
+
+        payload = scan_result.model_dump() if hasattr(scan_result, "model_dump") else asdict(scan_result)
         print(json.dumps(payload, indent=2, ensure_ascii=False))
         return 0
 
