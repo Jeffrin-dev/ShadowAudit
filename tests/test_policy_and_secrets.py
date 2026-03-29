@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from shadowaudit.core.policy import PolicyEngine
 from shadowaudit.core.secrets import SecretsDetector
 
@@ -23,6 +25,23 @@ def test_secrets_detector_flags_entropy_hits() -> None:
     findings = detector.detect("token=sk_live_A1b2C3d4E5f6G7h8")
 
     assert any("sk_live" in item for item in findings)
+
+
+@pytest.mark.parametrize(
+    ("secret", "expected"),
+    [
+        ("sk-proj-abcXYZ123randomSTRING456moreRANDOM789", "sk-proj-abcXYZ123randomSTRING456moreRANDOM789"),
+        ("ghp_abcXYZ123randomSTRING456moreRANDOM789", "ghp_abcXYZ123randomSTRING456moreRANDOM789"),
+        ("AKIA1234567890ABCDEF", "AKIA1234567890ABCDEF"),
+        ("xoxb-abcXYZ123randomSTRING456moreRANDOM789", "xoxb-abcXYZ123randomSTRING456moreRANDOM789"),
+    ],
+)
+def test_secrets_detector_flags_explicit_prefix_patterns(secret: str, expected: str) -> None:
+    detector = SecretsDetector(entropy_threshold=8.0)
+
+    findings = detector.detect(f"token={secret}")
+
+    assert expected in findings
 
 
 def test_policy_engine_returns_first_match(tmp_path: Path) -> None:
