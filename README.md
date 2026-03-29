@@ -49,6 +49,9 @@ response = client.chat.completions.create(
 | Secrets | OpenAI keys, GitHub tokens, AWS keys, Slack tokens |
 
 ---
+## Demo 
+[Demo.webm](https://github.com/user-attachments/assets/2b5a0c6a-787a-4a09-b23a-755b328cf155)
+
 
 ## Four operating modes
 
