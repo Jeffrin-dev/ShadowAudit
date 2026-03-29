@@ -50,7 +50,16 @@ def generate_gdpr_report(from_date: str | date, to_date: str | date, *, log_path
 
                 scan_result = event.get("scan_result", {}) or {}
                 action_counter.update([scan_result.get("action_taken", "unknown")])
-                entity_counter.update(scan_result.get("detected_entities", []) or [])
+                detected_entities = scan_result.get("detected_entities", []) or []
+                entity_counter.update(detected_entities)
+
+                secrets_found = scan_result.get("secrets_found", []) or []
+                if secrets_found:
+                    entity_counter.update(["SECRET"])
+
+    categories_of_personal_data = sorted(entity_counter.keys())
+    if entity_counter.get("SECRET"):
+        categories_of_personal_data.append("API keys and credentials")
 
     return {
         "article": "GDPR Article 30",
@@ -70,7 +79,7 @@ def generate_gdpr_report(from_date: str | date, to_date: str | date, *, log_path
                 "security and compliance monitoring",
             ],
             "categories_of_data_subjects": ["application users", "operators"],
-            "categories_of_personal_data": sorted(entity_counter.keys()),
+            "categories_of_personal_data": categories_of_personal_data,
             "technical_measures": [
                 "automated scanning of prompts",
                 "event-level audit logging",
