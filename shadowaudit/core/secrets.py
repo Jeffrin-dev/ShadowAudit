@@ -17,6 +17,13 @@ except Exception:  # pragma: no cover - fallback path when package is unavailabl
 class SecretsDetector:
     """Detect likely secrets with detect-secrets and Shannon entropy scoring."""
 
+    PREFIX_PATTERNS: tuple[re.Pattern[str], ...] = (
+        re.compile(r"\bsk-[A-Za-z0-9][A-Za-z0-9-]{19,}\b"),
+        re.compile(r"\bghp_[A-Za-z0-9]{20,}\b"),
+        re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
+        re.compile(r"\bxoxb-[0-9A-Za-z-]{10,}\b"),
+    )
+
     def __init__(self, *, entropy_threshold: float = 4.5) -> None:
         self.entropy_threshold = entropy_threshold
 
@@ -34,6 +41,12 @@ class SecretsDetector:
     @staticmethod
     def _candidate_strings(text: str) -> list[str]:
         return re.findall(r"[A-Za-z0-9_\-+/=]{8,}", text)
+
+    def _detect_prefix_patterns(self, text: str) -> list[str]:
+        findings: list[str] = []
+        for pattern in self.PREFIX_PATTERNS:
+            findings.extend(pattern.findall(text))
+        return findings
 
     def _detect_with_library(self, text: str) -> list[str]:
         if scan is None or transient_settings is None:
@@ -57,6 +70,7 @@ class SecretsDetector:
     def detect(self, text: str) -> list[str]:
         """Return unique secrets in a format compatible with ``ScanResult.secrets_found``."""
 
+        prefix_hits = self._detect_prefix_patterns(text)
         found = self._detect_with_library(text)
         entropy_hits = [
             candidate
@@ -64,5 +78,5 @@ class SecretsDetector:
             if self.shannon_entropy(candidate) >= self.entropy_threshold
         ]
 
-        merged = dict.fromkeys(found + entropy_hits)
+        merged = dict.fromkeys(prefix_hits + found + entropy_hits)
         return list(merged)
